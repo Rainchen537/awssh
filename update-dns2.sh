@@ -5,39 +5,61 @@ CF_API_TOKEN="k9d5stBstlYKhOiWFQe8QNCH23oYiD-eVF9-nxam"
 CF_ZONE_ID="db65e862654ab6ce15922b36276bf1fe"
 CF_RECORD_NAME="aws2.9xyu.top"
 
-# 获取本机公网IP
-PUBLIC_IP=$(curl -s https://ipv4.icanhazip.com)
+# DNS更新函数
+update_dns() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - 开始更新DNS记录"
 
-if [ -z "$PUBLIC_IP" ]; then
-    echo "获取IP失败，尝试备用方法"
-    PUBLIC_IP=$(curl -s https://api.ipify.org)
-fi
+    # 获取本机公网IP
+    PUBLIC_IP=$(curl -s https://ipv4.icanhazip.com)
 
-if [ -z "$PUBLIC_IP" ]; then
-    echo "无法获取公网IP"
-    exit 1
-fi
+    if [ -z "$PUBLIC_IP" ]; then
+        echo "获取IP失败，尝试备用方法"
+        PUBLIC_IP=$(curl -s https://api.ipify.org)
+    fi
 
-echo "当前公网IP: $PUBLIC_IP"
+    if [ -z "$PUBLIC_IP" ]; then
+        echo "无法获取公网IP"
+        return 1
+    fi
 
-# 获取现有DNS记录
-RECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records?name=$CF_RECORD_NAME&type=A" \
-    -H "Authorization: Bearer $CF_API_TOKEN" \
-    -H "Content-Type: application/json" | \
-    grep -o '"id":"[^"]*' | head -1 | cut -d'"' -f4)
+    echo "当前公网IP: $PUBLIC_IP"
 
-if [ -z "$RECORD_ID" ]; then
-    echo "DNS记录不存在，创建新记录"
-    curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records" \
+    # 获取现有DNS记录
+    RECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records?name=$CF_RECORD_NAME&type=A" \
         -H "Authorization: Bearer $CF_API_TOKEN" \
-        -H "Content-Type: application/json" \
-        --data "{\"type\":\"A\",\"name\":\"$CF_RECORD_NAME\",\"content\":\"$PUBLIC_IP\",\"ttl\":300}"
-else
-    echo "更新现有DNS记录"
-    curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$RECORD_ID" \
-        -H "Authorization: Bearer $CF_API_TOKEN" \
-        -H "Content-Type: application/json" \
-        --data "{\"type\":\"A\",\"name\":\"$CF_RECORD_NAME\",\"content\":\"$PUBLIC_IP\",\"ttl\":300}"
-fi
+        -H "Content-Type: application/json" | \
+        grep -o '"id":"[^"]*' | head -1 | cut -d'"' -f4)
 
-echo "DNS更新完成: $CF_RECORD_NAME -> $PUBLIC_IP"
+    if [ -z "$RECORD_ID" ]; then
+        echo "DNS记录不存在，创建新记录"
+        curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{\"type\":\"A\",\"name\":\"$CF_RECORD_NAME\",\"content\":\"$PUBLIC_IP\",\"ttl\":300}"
+    else
+        echo "更新现有DNS记录"
+        curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$RECORD_ID" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{\"type\":\"A\",\"name\":\"$CF_RECORD_NAME\",\"content\":\"$PUBLIC_IP\",\"ttl\":300}"
+    fi
+
+    echo "DNS更新完成: $CF_RECORD_NAME -> $PUBLIC_IP"
+    echo "----------------------------------------"
+}
+
+# 捕获Ctrl+C信号，优雅退出
+trap 'echo "收到退出信号，停止DNS更新服务..."; exit 0' INT TERM
+
+echo "DNS自动更新服务启动"
+echo "按 Ctrl+C 停止服务"
+echo "========================================"
+
+# 首次执行
+update_dns
+
+# 每分钟执行一次
+while true; do
+    sleep 60
+    update_dns
+done
