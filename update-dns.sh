@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Cloudflare配置
-CF_API_TOKEN="你的CF_API_TOKEN"
-CF_ZONE_ID="你的ZONE_ID"
+CF_API_TOKEN="k9d5stBstlYKhOiWFQe8QNCH23oYiD-eVF9-nxam"
+CF_ZONE_ID="db65e862654ab6ce15922b36276bf1fe"
 CF_RECORD_NAME="aws1.9xyu.top"
 
 # 获取本机公网IP
