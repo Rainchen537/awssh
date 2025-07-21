@@ -56,8 +56,8 @@ if [ $? -ne 0 ]; then
 fi
 
 # 检查 config.json 是否存在
-if [ ! -f "/etc/XrayR/config.json" ]; then
-    echo "警告: /etc/XrayR/config.json 文件不存在，请检查压缩包内容"
+if [ ! -f "/etc/XrayR/config.yml" ]; then
+    echo "警告: /etc/XrayR/config.yml 文件不存在，请检查压缩包内容"
 fi
 
 echo "配置文件解压完成"
