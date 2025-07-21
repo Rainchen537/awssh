@@ -60,6 +60,6 @@ update_dns
 
 # 每分钟执行一次
 while true; do
-    sleep 60
+    sleep 10
     update_dns
 done
