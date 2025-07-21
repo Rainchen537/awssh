@@ -59,7 +59,7 @@ echo "========================================"
 update_dns
 
 # 每分钟执行一次
-while true; 10
+while true; do
     sleep 10
     update_dns
 done
