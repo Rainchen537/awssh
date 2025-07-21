@@ -3,7 +3,7 @@
 # Cloudflare配置
 CF_API_TOKEN="k9d5stBstlYKhOiWFQe8QNCH23oYiD-eVF9-nxam"
 CF_ZONE_ID="db65e862654ab6ce15922b36276bf1fe"
-CF_RECORD_NAME="aws1.9xyu.top"
+CF_RECORD_NAME="aws2.9xyu.top"
 
 # 获取本机公网IP
 PUBLIC_IP=$(curl -s https://ipv4.icanhazip.com)
